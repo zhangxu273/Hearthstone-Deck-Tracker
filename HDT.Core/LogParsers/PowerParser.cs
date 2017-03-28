@@ -97,7 +97,8 @@ namespace HDT.Core.LogParsers
 				var entity = ParseEntity(match.Groups["entity"].Value);
 				Enum.TryParse(match.Groups["tag"].Value, out GameTag tag);
 				var value = GameTagParser.ParseTag(tag, match.Groups["value"].Value);
-				OnTagChange?.Invoke(new TagChangeData(tag, value, false, entity));
+				var entityId = entity.Id == -1 ? null : (int?)entity.Id;
+				OnTagChange?.Invoke(new TagChangeData(tag, value, false, entityId, entity.Name));
 				return;
 			}
 
@@ -115,7 +116,7 @@ namespace HDT.Core.LogParsers
 			{
 				var tag = GameTagParser.ParseEnum<GameTag>(match.Groups["tag"].Value);
 				var value = GameTagParser.ParseTag(tag, match.Groups["value"].Value);
-				OnTagChange?.Invoke(new TagChangeData(tag, value, true, null));
+				OnTagChange?.Invoke(new TagChangeData(tag, value, true, null, null));
 				return;
 			}
 

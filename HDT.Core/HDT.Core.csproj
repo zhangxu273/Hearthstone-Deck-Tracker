@@ -44,7 +44,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CoreManager.cs" />
+    <Compile Include="Hearthstone\GameStateModifiers\FullEntity.cs" />
+    <Compile Include="Hearthstone\GameState.cs" />
+    <Compile Include="Hearthstone\Entity.cs" />
+    <Compile Include="Hearthstone\GameStateModifiers\IGameStateModifier.cs" />
     <Compile Include="LogEventHandlers\PowerHandler.cs" />
+    <Compile Include="Hearthstone\GameStateModifiers\TagChange.cs" />
+    <Compile Include="Hearthstone\GameStateModifiers\ShowEntity.cs" />
     <Compile Include="LogParsers\IPowerEvents.cs" />
     <Compile Include="LogParsers\PowerData\BlockData.cs" />
     <Compile Include="LogParsers\PowerData\EntityData.cs" />

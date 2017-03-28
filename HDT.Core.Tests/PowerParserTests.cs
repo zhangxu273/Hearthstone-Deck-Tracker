@@ -84,7 +84,8 @@ namespace HDT.Core.Tests
 			parser.OnTagChange += (data) => tagChangeData = data;
 			parser.Parse(new LogLine("Power", "D 11:06:06.4768941 PowerTaskList.DebugPrintPower() -         tag=HEALTH value=4"));
 			Assert.IsNotNull(tagChangeData);
-			Assert.IsNull(tagChangeData.Entity);
+			Assert.IsNull(tagChangeData.EntityId);
+			Assert.IsNull(tagChangeData.EntityName);
 			Assert.IsTrue(tagChangeData.CreationTag);
 			Assert.AreEqual(tagChangeData.Tag, GameTag.HEALTH);
 			Assert.AreEqual(tagChangeData.Value, 4);
@@ -100,8 +101,8 @@ namespace HDT.Core.Tests
 			parser.Parse(new LogLine("Power",
 				"D 11:06:35.0269603 PowerTaskList.DebugPrintPower() -     TAG_CHANGE Entity=The Innkeeper tag=MULLIGAN_STATE value=DONE"));
 			Assert.IsNotNull(tagChangeData);
-			Assert.IsNotNull(tagChangeData.Entity);
-			Assert.AreEqual(tagChangeData.Entity.Name, "The Innkeeper");
+			Assert.IsNull(tagChangeData.EntityId);
+			Assert.AreEqual(tagChangeData.EntityName, "The Innkeeper");
 			Assert.IsFalse(tagChangeData.CreationTag);
 			Assert.AreEqual(tagChangeData.Tag, GameTag.MULLIGAN_STATE);
 			Assert.AreEqual(tagChangeData.Value, (int)Mulligan.DONE);
@@ -116,8 +117,8 @@ namespace HDT.Core.Tests
 			parser.Parse(new LogLine("Power",
 				"D 11:06:35.0274603 PowerTaskList.DebugPrintPower() -     TAG_CHANGE Entity=[name=UNKNOWN ENTITY [cardType=INVALID] id=15 zone=DECK zonePos=0 cardId= player=1] tag=ZONE_POSITION value=1"));
 			Assert.IsNotNull(tagChangeData);
-			Assert.IsNotNull(tagChangeData.Entity);
-			Assert.AreEqual(tagChangeData.Entity.Id, 15);
+			Assert.AreEqual(tagChangeData.EntityId, 15);
+			Assert.IsNull(tagChangeData.EntityName);
 			Assert.IsFalse(tagChangeData.CreationTag);
 			Assert.AreEqual(tagChangeData.Tag, GameTag.ZONE_POSITION);
 			Assert.AreEqual(tagChangeData.Value, 1);
@@ -132,8 +133,8 @@ namespace HDT.Core.Tests
 			parser.OnTagChange += (data) => tagChangeData = data;
 			parser.Parse(new LogLine("Power", "D 11:06:05.2403474 GameState.DebugPrintPower() - TAG_CHANGE Entity=1 tag=STATE value=RUNNING"));
 			Assert.IsNotNull(tagChangeData);
-			Assert.IsNotNull(tagChangeData.Entity);
-			Assert.AreEqual(tagChangeData.Entity.Id, 1);
+			Assert.IsNull(tagChangeData.EntityName);
+			Assert.AreEqual(tagChangeData.EntityId, 1);
 			Assert.IsFalse(tagChangeData.CreationTag);
 			Assert.AreEqual(tagChangeData.Tag, GameTag.STATE);
 			Assert.AreEqual(tagChangeData.Value, (int)State.RUNNING);
