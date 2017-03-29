@@ -38,7 +38,7 @@ namespace HDT.Core.LogParsers
 			new Regex(@"SHOW_ENTITY\ -\ Updating\ Entity=(?<entity>(.+))\ CardID=(?<cardId>(\w*))");
 
 		public event Action<EntityData> OnGameEntity;
-		public event Action<EntityData> OnPlayerEntity;
+		public event Action<PlayerEntityData> OnPlayerEntity;
 		public event Action<EntityData> OnFullEntity;
 		public event Action<EntityData> OnShowEntity;
 		public event Action OnCreateGame;
@@ -60,7 +60,7 @@ namespace HDT.Core.LogParsers
 				id = -1;
 				name = entity;
 			}
-			return new EntityData(id, name, null, null, null);
+			return new EntityData(id, name, null, null);
 		}
 
 		public void Parse(LogLine line)
@@ -69,15 +69,16 @@ namespace HDT.Core.LogParsers
 			if(match.Success)
 			{
 				var id = int.Parse(match.Groups["id"].Value);
-				OnGameEntity?.Invoke(new EntityData(id, null, null, null, GameEntity));
+				OnGameEntity?.Invoke(new EntityData(id, null, null, null));
 				return;
 			}
 
 			match = PlayerEntityRegex.Match(line.LineContent);
 			if(match.Success)
 			{
-				var id = int.Parse(match.Groups["id"].Value);
-				OnPlayerEntity?.Invoke(new EntityData(id, null, null, null, PlayerEntity));
+				var entityId = int.Parse(match.Groups["id"].Value);
+				var playerId = int.Parse(match.Groups["playerId"].Value);
+				OnPlayerEntity?.Invoke(new PlayerEntityData(entityId, playerId));
 				return;
 			}
 
@@ -87,7 +88,7 @@ namespace HDT.Core.LogParsers
 				var id = int.Parse(match.Groups["id"].Value);
 				var cardId = match.Groups["cardId"].Value;
 				var zone = GameTagParser.ParseEnum<Zone>(match.Groups["zone"].Value);
-				OnFullEntity?.Invoke(new EntityData(id, null, cardId, zone, CardEntity));
+				OnFullEntity?.Invoke(new EntityData(id, null, cardId, zone));
 				return;
 			}
 
@@ -107,7 +108,7 @@ namespace HDT.Core.LogParsers
 			{
 				var cardId = match.Groups["cardId"].Value;
 				var entity = ParseEntity(match.Groups["entity"].Value);
-				OnShowEntity?.Invoke(new EntityData(entity.Id, entity.Name, cardId, null, null));
+				OnShowEntity?.Invoke(new EntityData(entity.Id, entity.Name, cardId, null));
 				return;
 			}
 

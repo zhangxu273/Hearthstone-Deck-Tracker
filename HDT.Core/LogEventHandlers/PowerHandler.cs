@@ -15,19 +15,25 @@ namespace HDT.Core.LogEventHandlers
 	{
 		public PowerHandlerState()
 		{
-			EntityNames = new Dictionary<string, int>();
+			PendingTagChanges = new List<TagChangeData>();
+			PlayerEntityIds = new Dictionary<int, int>();
 		}
 
 		public int CurrentEntity { get; set; }
-		public Dictionary<string, int> EntityNames { get; }
+		public List<TagChangeData> PendingTagChanges { get; }
+		public Dictionary<int, int> PlayerEntityIds { get; }
+		public int GameEntityId { get; set; }
 	}
 
-	internal class PowerHandler
+	internal class PowerHandler : IGameEventSource
 	{
+		private readonly IPlayerIdLookupProvider _playerIdLookup;
 		private PowerHandlerState _state;
 
-		public PowerHandler(IPowerEvents powerEvents)
+		public PowerHandler(IPowerEvents powerEvents, IPlayerIdLookupProvider playerIdLookup)
 		{
+			_playerIdLookup = playerIdLookup;
+			_playerIdLookup.OnUpdated += PlayerIdLookupOnUpdated;
 			powerEvents.OnCreateGame += PowerEvents_OnCreateGame;
 			powerEvents.OnGameEntity += PowerEvents_OnGameEntity;
 			powerEvents.OnPlayerEntity += PowerEvents_OnPlayerEntity;
@@ -37,6 +43,22 @@ namespace HDT.Core.LogEventHandlers
 			powerEvents.OnBlockEnd += PowerEvents_OnBlockEnd;
 			powerEvents.OnBlockStart += PowerEvents_OnBlockStart;
 			powerEvents.OnEndSpectator += PowerEvents_OnEndSpectator;
+		}
+
+		private void PlayerIdLookupOnUpdated()
+		{
+			if(_state == null)
+				return;
+			for (var i = _state.PendingTagChanges.Count - 1; i > 0; i--)
+			{
+				var tagChange = _state.PendingTagChanges[i];
+				if (!TryGetEntityId(tagChange.EntityName, out var playerId))
+					continue;
+				if(!_state.PlayerEntityIds.TryGetValue(playerId, out var entityId))
+					continue;
+				_state.PendingTagChanges.RemoveAt(i);
+				OnGameStateChange?.Invoke(new TagChange(entityId, tagChange.Tag, tagChange.Value));
+			}
 		}
 
 		public event Action OnCreateGame;
@@ -51,13 +73,14 @@ namespace HDT.Core.LogEventHandlers
 		private void PowerEvents_OnGameEntity(EntityData data)
 		{
 			_state.CurrentEntity = data.Id;
-			_state.EntityNames["GameEntity"] = data.Id;
+			_state.GameEntityId = data.Id;
 			OnGameStateChange?.Invoke(new FullEntity(data));
 		}
 
-		private void PowerEvents_OnPlayerEntity(EntityData data)
+		private void PowerEvents_OnPlayerEntity(PlayerEntityData data)
 		{
 			_state.CurrentEntity = data.Id;
+			_state.PlayerEntityIds[data.PlayerId] = data.Id;
 			OnGameStateChange?.Invoke(new FullEntity(data));
 		}
 
@@ -76,6 +99,14 @@ namespace HDT.Core.LogEventHandlers
 		private void PowerEvents_OnTagChange(TagChangeData data)
 		{
 			var entityId = data.EntityId ?? _state.CurrentEntity;
+			if(!data.EntityId.HasValue && data.EntityName != null)
+			{
+				if(!TryGetEntityId(data.EntityName, out entityId))
+				{
+					_state.PendingTagChanges.Add(data);
+					return;
+				}
+			}
 			OnGameStateChange?.Invoke(new TagChange(entityId, data.Tag, data.Value));
 		}
 
@@ -90,5 +121,19 @@ namespace HDT.Core.LogEventHandlers
 		private void PowerEvents_OnEndSpectator()
 		{
 		}
+
+		private bool TryGetEntityId(string name, out int entityId)
+		{
+			if(name == "GameEntity")
+			{
+				entityId = _state.GameEntityId;
+				return true;
+			}
+			if(_playerIdLookup.Players.TryGetValue(name, out var playerId))
+				return _state.PlayerEntityIds.TryGetValue(playerId, out entityId);
+			entityId = -1;
+			return false;
+		}
+
 	}
 }

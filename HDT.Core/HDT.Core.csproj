@@ -48,6 +48,8 @@
     <Compile Include="Hearthstone\GameState.cs" />
     <Compile Include="Hearthstone\Entity.cs" />
     <Compile Include="Hearthstone\GameStateModifiers\IGameStateModifier.cs" />
+    <Compile Include="LogEventHandlers\IGameEventSource.cs" />
+    <Compile Include="LogEventHandlers\IPlayerIdLookupProvider.cs" />
     <Compile Include="LogEventHandlers\PowerHandler.cs" />
     <Compile Include="Hearthstone\GameStateModifiers\TagChange.cs" />
     <Compile Include="Hearthstone\GameStateModifiers\ShowEntity.cs" />
@@ -57,9 +59,11 @@
     <Compile Include="LogParsers\PowerData\EntityType.cs" />
     <Compile Include="LogParsers\GameTagParser.cs" />
     <Compile Include="LogParsers\LogConstants.cs" />
+    <Compile Include="LogParsers\PowerData\PlayerEntityData.cs" />
     <Compile Include="LogParsers\PowerParser.cs" />
     <Compile Include="LogParsers\PowerData\TagChangeData.cs" />
     <Compile Include="LogWatcherManager.cs" />
+    <Compile Include="Hearthstone\PlayerIdProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\Extensions\DateTimeExtensions.cs" />
     <Compile Include="Utility\Logging\Log.cs" />
@@ -71,6 +75,10 @@
     <ProjectReference Include="..\HearthDb\HearthDb\HearthDb.csproj">
       <Project>{7ed14243-e02b-4b94-af00-a67a62c282f0}</Project>
       <Name>HearthDb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HearthMirror\HearthMirror\HearthMirror.csproj">
+      <Project>{1694A2F8-645A-4263-A6AB-FC26323FD675}</Project>
+      <Name>HearthMirror</Name>
     </ProjectReference>
     <ProjectReference Include="..\HearthWatcher\HearthWatcher.csproj">
       <Project>{02E1843D-3F5D-45E0-9B16-1F28209EED82}</Project>

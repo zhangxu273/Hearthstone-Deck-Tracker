@@ -6,7 +6,7 @@ namespace HDT.Core.LogParsers
 	internal interface IPowerEvents
 	{
 		event Action<EntityData> OnGameEntity;
-		event Action<EntityData> OnPlayerEntity;
+		event Action<PlayerEntityData> OnPlayerEntity;
 		event Action<EntityData> OnFullEntity;
 		event Action<EntityData> OnShowEntity;
 		event Action OnCreateGame;

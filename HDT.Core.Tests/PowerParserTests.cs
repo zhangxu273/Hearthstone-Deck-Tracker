@@ -20,7 +20,6 @@ namespace HDT.Core.Tests
 				"D 11:06:05.2789766 PowerTaskList.DebugPrintPower() -         GameEntity EntityID=1"));
 			Assert.IsNotNull(entityData);
 			Assert.AreEqual(entityData.Id, 1);
-			Assert.AreEqual(entityData.Type, EntityType.GameEntity);
 			Assert.IsNull(entityData.Zone);
 			Assert.IsNull(entityData.CardId);
 			Assert.IsNull(entityData.Name);
@@ -30,13 +29,13 @@ namespace HDT.Core.Tests
 		public void TestEntityCreation_PlayerEntity()
 		{
 			var parser = new PowerParser();
-			EntityData entityData = null;
+			PlayerEntityData entityData = null;
 			parser.OnPlayerEntity += (data) => entityData = data;
 			parser.Parse(new LogLine("Power",
 				"D 11:06:05.2794779 PowerTaskList.DebugPrintPower() -         Player EntityID=2 PlayerID=1 GameAccountId=[hi=144115198130930503 lo=15856412]"));
 			Assert.IsNotNull(entityData);
 			Assert.AreEqual(entityData.Id, 2);
-			Assert.AreEqual(entityData.Type, EntityType.PlayerEntity);
+			Assert.AreEqual(entityData.PlayerId, 1);
 			Assert.IsNull(entityData.Zone);
 			Assert.IsNull(entityData.CardId);
 			Assert.IsNull(entityData.Name);
@@ -52,7 +51,6 @@ namespace HDT.Core.Tests
 				"D 11:06:05.2930114 PowerTaskList.DebugPrintPower() -     FULL_ENTITY - Updating [name=Garrosh Hellscream id=64 zone=PLAY zonePos=0 cardId=HERO_01 player=1] CardID=HERO_01"));
 			Assert.IsNotNull(entityData);
 			Assert.AreEqual(entityData.Id, 64);
-			Assert.AreEqual(entityData.Type, EntityType.CardEntity);
 			Assert.IsTrue(entityData.Zone.HasValue);
 			Assert.AreEqual(entityData.Zone.Value, Zone.PLAY);
 			Assert.AreEqual(entityData.CardId, "HERO_01");
@@ -69,7 +67,6 @@ namespace HDT.Core.Tests
 				"D 11:06:05.2915068 PowerTaskList.DebugPrintPower() -     FULL_ENTITY - Updating [name=UNKNOWN ENTITY [cardType=INVALID] id=33 zone=DECK zonePos=0 cardId= player=1] CardID="));
 			Assert.IsNotNull(entityData);
 			Assert.AreEqual(entityData.Id, 33);
-			Assert.AreEqual(entityData.Type, EntityType.CardEntity);
 			Assert.IsTrue(entityData.Zone.HasValue);
 			Assert.AreEqual(entityData.Zone.Value, Zone.DECK);
 			Assert.AreEqual(entityData.CardId, string.Empty);
