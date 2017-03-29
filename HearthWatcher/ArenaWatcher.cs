@@ -1,22 +1,18 @@
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using HearthMirror.Objects;
 using HearthWatcher.EventArgs;
 using HearthWatcher.Providers;
 
 namespace HearthWatcher
 {
-	public class ArenaWatcher
+	public class ArenaWatcher : Watcher
 	{
 		public delegate void ChoicesChangedEventHandler(object sender, ChoicesChangedEventArgs args);
 		public delegate void CardPickedEventHandler(object sender, CardPickedEventArgs args);
 		public delegate void CompleteDeckEventHandler(object sender, CompleteDeckEventArgs args);
 		public delegate void RewardsEventHandler(object sender, RewardsEventArgs args);
 
-		private readonly int _delay;
-		private bool _running;
-		private bool _watch;
 		private int _prevSlot = -1;
 		private bool _sameChoices;
 		private Card[] _prevChoices;
@@ -24,12 +20,11 @@ namespace HearthWatcher
 		private const int MaxDeckSize = 30;
 		private readonly IArenaProvider _arenaProvider;
 
-		public ArenaWatcher(IArenaProvider arenaProvider, int delay = 500)
+		public ArenaWatcher(IArenaProvider arenaProvider, int delay = 500) : base(delay)
 		{
 			if(arenaProvider == null)
 				throw new ArgumentNullException(nameof(arenaProvider));
 			_arenaProvider = arenaProvider;
-			_delay = delay;
 		}
 
 		public event ChoicesChangedEventHandler OnChoicesChanged;
@@ -37,36 +32,17 @@ namespace HearthWatcher
 		public event CompleteDeckEventHandler OnCompleteDeck;
 		public event RewardsEventHandler OnRewards;
 
-		public void Run()
+		protected override void Reset()
 		{
-			_watch = true;
-			if(!_running)
-				Watch();
-		}
-
-		public void Stop() => _watch = false;
-
-		private async void Watch()
-		{
-			_running = true;
 			_prevSlot = -1;
 			_prevInfo = null;
-			while(_watch)
-			{
-				await Task.Delay(_delay);
-				if(!_watch)
-					break;
-				if(Update())
-					break;
-			}
-			_running = false;
 		}
 
-		public bool Update()
+		public override void Update()
 		{
 			var arenaInfo = _arenaProvider.GetArenaInfo();
 			if(arenaInfo == null)
-				return false;
+				return;
 			var numCards = arenaInfo.Deck.Cards.Sum(x => x.Count);
 			if(numCards == MaxDeckSize)
 			{
@@ -75,14 +51,14 @@ namespace HearthWatcher
 				OnCompleteDeck?.Invoke(this, new CompleteDeckEventArgs(arenaInfo));
 				if(arenaInfo.Rewards?.Any() ?? false)
 					OnRewards?.Invoke(this, new RewardsEventArgs(arenaInfo));
-				_watch = false;
-				return true;
+				Stop();
+				return;
 			}
 			if(HasChanged(arenaInfo, arenaInfo.CurrentSlot))
 			{
 				var choices = _arenaProvider.GetDraftChoices();
 				if(choices == null || choices.Length == 0)
-					return false;
+					return;
 				if(arenaInfo.CurrentSlot > _prevSlot)
 				{
 					if(ChoicesChanged(choices) || _sameChoices)
@@ -93,7 +69,7 @@ namespace HearthWatcher
 					else
 					{
 						_sameChoices = true;
-						return false;
+						return;
 					}
 				}
 				if(_prevSlot == 0 && arenaInfo.CurrentSlot == 1)
@@ -104,7 +80,6 @@ namespace HearthWatcher
 				_prevInfo = arenaInfo;
 				_prevChoices = choices;
 			}
-			return false;
 		}
 
 		private bool ChoicesChanged(Card[] choices) => _prevChoices == null || choices[0] != _prevChoices[0] || choices[1] != _prevChoices[1] || choices[2] != _prevChoices[2];
