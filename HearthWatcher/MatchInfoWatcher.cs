@@ -20,20 +20,23 @@ namespace HearthWatcher
 
 		public override void Update()
 		{
-			//TODO: Fix comparisons, '!=' always returns true since they are different objects
 			var matchInfo = Reflection.GetMatchInfo();
-			if(matchInfo != _matchInfo)
+			if(_matchInfo == null && matchInfo?.LocalPlayer != null 
+				&& matchInfo.OpposingPlayer != null && matchInfo.GameType > 0)
 			{
 				_matchInfo = matchInfo;
 				OnMatchInfoChanged?.Invoke(_matchInfo);
 			}
 
 			var gameServerInfo = Reflection.GetServerInfo();
-			if(gameServerInfo != _gameServerInfo)
+			if(_gameServerInfo == null && gameServerInfo != null)
 			{
 				_gameServerInfo = gameServerInfo;
 				OnGameServerInfoChanged?.Invoke(gameServerInfo);
 			}
+
+			if(_matchInfo != null && _gameServerInfo != null)
+				Stop();
 		}
 	}
 }
