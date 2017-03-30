@@ -1,10 +1,9 @@
 ﻿#region
 
-using System;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using HDT.Core.Hearthstone;
-using HDT.Core.LogEventHandlers;
-using HDT.Core.LogParsers;
+using HDT.Core.Utility.Logging;
+using HearthMirror.Enums;
 using HearthWatcher;
 
 #endregion
@@ -13,29 +12,58 @@ namespace HDT.Core
 {
 	public class CoreManager
 	{
-		private readonly LogWatcherManager _logWatcherManager;
-		private readonly PowerParser _powerParser;
-		private readonly PowerHandler _powerHandler;
-		public GameState GameState { get; }
+		private readonly ProcessWatcher _processWatcher;
+		private readonly SceneModeWatcher _sceneModeWatcher;
+		private Process _currentProcess;
+		public Game CurrentGame { get; private set; }
+		public Game PreviousGame { get; private set; }
 
 		public CoreManager()
 		{
-			_powerParser = new PowerParser();
-			_powerHandler = new PowerHandler(_powerParser, new PlayerIdProvider());
-			GameState = new GameState(_powerHandler);
+			Log.InitializeDefault();
+			_processWatcher = new ProcessWatcher();
+			_processWatcher.OnStart += Process_OnStart;
+			_processWatcher.OnExit += Process_OnExit;
+			_sceneModeWatcher = new SceneModeWatcher();
+			_sceneModeWatcher.OnSceneModeChanged += SceneModeWatcher_OnSceneModeChanged;
+		}
 
-			_logWatcherManager = new LogWatcherManager();
-			_logWatcherManager.OnPowerPowerTaskList += _powerParser.Parse;
+		private void SceneModeWatcher_OnSceneModeChanged(SceneMode current, SceneMode previous)
+		{
+			Log.Info($"SceneMode changed: {previous} -> {current}");
+			if(current == SceneMode.GAMEPLAY)
+				CurrentGame = new Game(_currentProcess);
+			else if(previous == SceneMode.GAMEPLAY)
+			{
+				CurrentGame.End();
+				PreviousGame = CurrentGame;
+				CurrentGame = null;
+			}
+		}
+
+		private async void Process_OnExit(Process proc)
+		{
+			Log.Info($"Process with Id={proc.Id} exited. Stopping SceneMode watcher.");
+			_currentProcess = null;
+			await _sceneModeWatcher.Stop();
+		}
+
+		private void Process_OnStart(Process proc)
+		{
+			Log.Info($"Found process with Id={proc.Id}. Starting SceneMode watcher.");
+			_currentProcess = proc;
+			_sceneModeWatcher.Run();
 		}
 
 		public bool Running { get; private set; }
 
-		public async Task Run()
+		public void Run()
 		{
 			if(Running)
 				return;
 
-			await _logWatcherManager.Start();
+			Log.Info("Waiting for Process...");
+			_processWatcher.Run();
 
 			Running = true;
 		}
