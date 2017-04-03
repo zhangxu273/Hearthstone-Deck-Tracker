@@ -17,6 +17,7 @@ namespace HDT.Core.Hearthstone
 		private readonly MatchInfoWatcher _matchInfoWatcher;
 		private readonly PlayerIdProvider _playerIdProvider;
 		private readonly PowerLogWatcher _powerLogWatcher;
+		private bool _ended;
 
 		public Game(Process process)
 		{
@@ -32,6 +33,10 @@ namespace HDT.Core.Hearthstone
 			_powerLogWatcher.OnPowerLogFound += OnPowerLogFound;
 			_powerLogWatcher.OnPowerTaskList += _powerParser.Parse;
 			_powerLogWatcher.Run();
+
+			GameState.OnModified += GameEvents.OnGameEnd(End);
+			GameState.OnModified += GameEvents.OnCardPlayed(entity => Log.Info($"Played: {entity.Id} - {entity.CardId}"));
+			GameState.OnModified += GameEvents.OnCardDrawn(entity => Log.Info($"Drawn: {entity.Id} - {entity.CardId}"));
 		}
 
 		private void OnMatchInfoChanged(MatchInfo matchInfo)
@@ -48,6 +53,9 @@ namespace HDT.Core.Hearthstone
 
 		public async void End()
 		{
+			if(_ended)
+				return;
+			_ended = true;
 			Log.Info("Game ended");
 			_matchInfoWatcher.OnGameServerInfoChanged -= OnGameServerInfoChanged;
 			_matchInfoWatcher.OnMatchInfoChanged -= OnMatchInfoChanged;

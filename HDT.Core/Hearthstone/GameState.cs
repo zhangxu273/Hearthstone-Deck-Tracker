@@ -17,14 +17,14 @@ namespace HDT.Core.Hearthstone
 			events.OnGameStateChange += Apply;
 		}
 
-		public event Action OnModified;
-
 		public Dictionary<int, Entity> Entities { get; }
+
+		public event Action<IGameStateModifier, GameState> OnModified;
 
 		public void Apply(IGameStateModifier modifier)
 		{
 			modifier.Apply(this);
-			OnModified?.Invoke();
+			OnModified?.Invoke(modifier, this);
 		}
 	}
 }

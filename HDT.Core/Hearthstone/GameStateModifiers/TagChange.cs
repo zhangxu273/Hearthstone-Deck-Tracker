@@ -4,20 +4,23 @@ namespace HDT.Core.Hearthstone.GameStateModifiers
 {
 	public class TagChange : IGameStateModifier
 	{
-		private readonly int _entityId;
-		private readonly GameTag _tag;
-		private readonly int _value;
+		public int Value { get; }
+		public GameTag Tag { get; }
+		public int EntityId { get; }
+		public int? PreviousValue { get; private set; }
 
 		public TagChange(int entityId, GameTag tag, int value)
 		{
-			_entityId = entityId;
-			_tag = tag;
-			_value = value;
+			EntityId = entityId;
+			Tag = tag;
+			Value = value;
 		}
 
 		public void Apply(GameState gameState)
 		{
-			gameState.Entities[_entityId].Tags[_tag] = _value;
+			var entity = gameState.Entities[EntityId];
+			PreviousValue = entity.GetTag(Tag);
+			entity.Tags[Tag] = Value;
 		}
 	}
 }
