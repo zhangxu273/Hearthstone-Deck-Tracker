@@ -1,4 +1,5 @@
 ﻿using System;
+using HDT.Core.Hearthstone.Entities;
 using HDT.Core.Hearthstone.GameStateModifiers;
 using HearthDb.Enums;
 

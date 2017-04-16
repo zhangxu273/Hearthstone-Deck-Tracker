@@ -70,7 +70,7 @@ namespace HDT.Core.LogEventHandlers
 			OnCreateGame?.Invoke();
 		}
 
-		private void PowerEvents_OnGameEntity(EntityData data)
+		private void PowerEvents_OnGameEntity(GameEntityData data)
 		{
 			_state.CurrentEntity = data.Id;
 			_state.GameEntityId = data.Id;

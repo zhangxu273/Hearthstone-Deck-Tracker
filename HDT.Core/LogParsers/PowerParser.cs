@@ -37,7 +37,7 @@ namespace HDT.Core.LogParsers
 		public static readonly Regex ShowEntityRegex =
 			new Regex(@"SHOW_ENTITY\ -\ Updating\ Entity=(?<entity>(.+))\ CardID=(?<cardId>(\w*))");
 
-		public event Action<EntityData> OnGameEntity;
+		public event Action<GameEntityData> OnGameEntity;
 		public event Action<PlayerEntityData> OnPlayerEntity;
 		public event Action<EntityData> OnFullEntity;
 		public event Action<EntityData> OnShowEntity;
@@ -69,7 +69,7 @@ namespace HDT.Core.LogParsers
 			if(match.Success)
 			{
 				var id = int.Parse(match.Groups["id"].Value);
-				OnGameEntity?.Invoke(new EntityData(id, null, null, null));
+				OnGameEntity?.Invoke(new GameEntityData(id));
 				return;
 			}
 

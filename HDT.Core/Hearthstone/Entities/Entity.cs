@@ -1,16 +1,15 @@
 #region
 
 using System.Collections.Generic;
-using HDT.Core.LogParsers.PowerData;
 using HearthDb.Enums;
 
 #endregion
 
-namespace HDT.Core.Hearthstone
+namespace HDT.Core.Hearthstone.Entities
 {
 	public class Entity
 	{
-		private Entity(int id, string cardId)
+		public Entity(int id, string cardId)
 		{
 			Id = id;
 			CardId = cardId;
@@ -30,14 +29,6 @@ namespace HDT.Core.Hearthstone
 		public bool HasTag(GameTag tag)
 		{
 			return GetTag(tag) > 0;
-		}
-
-		public static Entity FromData(EntityData data)
-		{
-			var entity = new Entity(data.Id, data.CardId);
-			if(data.Zone.HasValue)
-				entity.Tags[GameTag.ZONE] = (int)data.Zone;
-			return entity;
 		}
 	}
 }
