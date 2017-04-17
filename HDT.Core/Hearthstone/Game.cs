@@ -1,6 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using HDT.Core.HsReplay;
 using HDT.Core.LogEventHandlers;
 using HDT.Core.LogParsers;
+using HDT.Core.Utility;
 using HDT.Core.Utility.Logging;
 using HearthMirror.Objects;
 using HearthWatcher;
@@ -10,17 +14,18 @@ namespace HDT.Core.Hearthstone
 	public class Game
 	{
 		public GameState GameState { get; }
-		public MatchInfo MatchInfo { get; private set; }
-		public GameServerInfo GameServerInfo { get; private set; }
+		public MatchMetaData MetaData { get; }
 		private readonly PowerParser _powerParser;
 		private readonly PowerHandler _powerHandler;
 		private readonly MatchInfoWatcher _matchInfoWatcher;
 		private readonly PlayerIdProvider _playerIdProvider;
 		private readonly PowerLogWatcher _powerLogWatcher;
 		private bool _ended;
+		private readonly List<string> _gameStateLog;
 
-		public Game(Process process)
+		public Game(Process process, GameMetaData gameMetaData)
 		{
+			_gameStateLog = new List<string>();
 			_powerParser = new PowerParser();
 			_matchInfoWatcher = new MatchInfoWatcher();
 			_matchInfoWatcher.OnMatchInfoChanged += OnMatchInfoChanged;
@@ -28,10 +33,16 @@ namespace HDT.Core.Hearthstone
 			_playerIdProvider = new PlayerIdProvider(_matchInfoWatcher);
 			_powerHandler = new PowerHandler(_powerParser, _playerIdProvider);
 			GameState = new GameState(_powerHandler);
+			MetaData = new MatchMetaData(gameMetaData)
+			{
+				StartTime = DateTime.Now,
+				Build = Helper.GetExecutableBuild(process)
+			};
 			_matchInfoWatcher.Run();
 			_powerLogWatcher = new PowerLogWatcher(process);
 			_powerLogWatcher.OnPowerLogFound += OnPowerLogFound;
 			_powerLogWatcher.OnPowerTaskList += _powerParser.Parse;
+			_powerLogWatcher.OnGameState += (line) => _gameStateLog.Add(line.Line);
 			_powerLogWatcher.Run();
 
 			GameState.OnModified += GameEvents.OnGameEnd(End);
@@ -41,17 +52,17 @@ namespace HDT.Core.Hearthstone
 
 		private void OnMatchInfoChanged(MatchInfo matchInfo)
 		{
-			MatchInfo = matchInfo;
+			MetaData.MatchInfo = matchInfo;
 		}
 
 		private void OnGameServerInfoChanged(GameServerInfo gameServerInfo)
 		{
-			GameServerInfo = gameServerInfo;
+			MetaData.ServerInfo = gameServerInfo;
 		}
 
 		private void OnPowerLogFound() => Log.Info("Power.log found");
 
-		public async void End()
+		public void End()
 		{
 			if(_ended)
 				return;
@@ -61,7 +72,9 @@ namespace HDT.Core.Hearthstone
 			_matchInfoWatcher.OnMatchInfoChanged -= OnMatchInfoChanged;
 			_powerLogWatcher.OnPowerLogFound -= OnPowerLogFound;
 			_powerLogWatcher.OnPowerTaskList -= _powerParser.Parse;
-			await _powerLogWatcher.Stop();
+
+			LogUploader.Upload(_gameStateLog.ToArray(), MetaData);
+			_powerLogWatcher.Stop();
 		}
 	}
 }

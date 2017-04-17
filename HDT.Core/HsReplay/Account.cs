@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace HDT.Core.HsReplay
 {
-	internal sealed class Account
+	public sealed class Account
 	{
 		public static string CacheFilePath { get; } = Path.Combine(Helper.DataDirectory, "hsreplay.cache");
 

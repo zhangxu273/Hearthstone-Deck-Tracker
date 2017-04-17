@@ -10,7 +10,7 @@ using HSReplay.Responses;
 
 namespace HDT.Core.HsReplay
 {
-	internal class ApiWrapper
+	public class ApiWrapper
 	{
 #if(SQUIRREL)
 		private const string UserAgentName = "HDT";
