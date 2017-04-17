@@ -61,10 +61,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArenaWatcher.cs" />
+    <Compile Include="BrawlInfoWatcher.cs" />
     <Compile Include="EventArgs\CardPickedEventArgs.cs" />
     <Compile Include="EventArgs\ChoicesChangedEventArgs.cs" />
     <Compile Include="EventArgs\CompleteDeckEventArgs.cs" />
     <Compile Include="EventArgs\RewardsEventArgs.cs" />
+    <Compile Include="HearthMirrorArenaProvider.cs" />
     <Compile Include="LogReader\LogLine.cs" />
     <Compile Include="LogReader\LogFileWatcher.cs" />
     <Compile Include="LogReader\LogWatcherInfo.cs" />

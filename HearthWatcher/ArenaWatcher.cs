@@ -27,6 +27,11 @@ namespace HearthWatcher
 			_arenaProvider = arenaProvider;
 		}
 
+		public ArenaWatcher(int delay = 500) : base(delay)
+		{
+			_arenaProvider = new HearthMirrorArenaProvider();
+		}
+
 		public event ChoicesChangedEventHandler OnChoicesChanged;
 		public event CardPickedEventHandler OnCardPicked;
 		public event CompleteDeckEventHandler OnCompleteDeck;
