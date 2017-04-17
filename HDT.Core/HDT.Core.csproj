@@ -33,6 +33,9 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,6 +56,12 @@
     <Compile Include="Hearthstone\Entities\Entity.cs" />
     <Compile Include="Hearthstone\GameStateModifiers\IGameStateModifier.cs" />
     <Compile Include="Hearthstone\Entities\PlayerEntity.cs" />
+    <Compile Include="HsReplay\Account.cs" />
+    <Compile Include="HsReplay\ApiWrapper.cs" />
+    <Compile Include="HsReplay\Enums\AccountStatus.cs" />
+    <Compile Include="Hearthstone\MatchMetaData.cs" />
+    <Compile Include="HsReplay\LogUploader.cs" />
+    <Compile Include="HsReplay\UploadMetaDataGenerator.cs" />
     <Compile Include="LogEventHandlers\IGameEventSource.cs" />
     <Compile Include="LogEventHandlers\IPlayerIdLookupProvider.cs" />
     <Compile Include="LogEventHandlers\PowerHandler.cs" />
@@ -72,10 +81,13 @@
     <Compile Include="Hearthstone\PlayerIdProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\Extensions\DateTimeExtensions.cs" />
+    <Compile Include="Utility\GameTypeConverter.cs" />
+    <Compile Include="Utility\Helper.cs" />
     <Compile Include="Utility\Logging\Log.cs" />
     <Compile Include="Utility\Logging\LogType.cs" />
     <Compile Include="Utility\NativeMethods.cs" />
     <Compile Include="Utility\HearthstoneProc.cs" />
+    <Compile Include="Utility\XmlManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HearthDb\HearthDb\HearthDb.csproj">
@@ -90,6 +102,13 @@
       <Project>{02E1843D-3F5D-45E0-9B16-1F28209EED82}</Project>
       <Name>HearthWatcher</Name>
     </ProjectReference>
+    <ProjectReference Include="..\HSReplay-Api\HSReplay\HSReplay.csproj">
+      <Project>{A6264074-8A96-417C-9673-5EE7E9820B1F}</Project>
+      <Name>HSReplay</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

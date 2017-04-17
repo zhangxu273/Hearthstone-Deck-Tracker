@@ -21,32 +21,28 @@ namespace HDT.Core.Utility.Logging
 		private static readonly Queue<string> LogQueue = new Queue<string>();
 		public static bool Initialized { get; private set; }
 
-		private static readonly string DefaultDirectory =
-			Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HearthstoneDeckTracker", "Logs");
-
 		private static string GetLogFile(string path)
 		{
 			var timeStamp = DateTime.Now.ToUnixTime();
 			string logFile;
-			while(File.Exists((logFile = Path.Combine(path, $"{BaseFileName}_{timeStamp}.txt"))))
+			while(File.Exists(logFile = Path.Combine(path, $"{BaseFileName}_{timeStamp}.txt")))
 				timeStamp++;
 			return logFile;
 		}
 
-		public static void InitializeDefault() => Initialize(DefaultDirectory);
-
-		public static void Initialize(string directory)
+		public static void Initialize()
 		{
 			if(Initialized)
 				return;
 			Trace.AutoFlush = true;
-			if(!Directory.Exists(directory))
-				Directory.CreateDirectory(directory);
+			var directory = Helper.GetDirectory("Logs");
+			if(!directory.Exists)
+				directory.Create();
 			else
 			{
 				try
 				{
-					var oldLogs = new DirectoryInfo(directory).GetFiles($"{BaseFileName}*")
+					var oldLogs = directory.GetFiles($"{BaseFileName}*")
 						.Where(x => x.LastWriteTime < DateTime.Now.AddDays(-MaxLogFileAge))
 						.OrderByDescending(x => x.LastWriteTime)
 						.Skip(KeepOldLogs);
@@ -65,7 +61,7 @@ namespace HDT.Core.Utility.Logging
 				{
 				}
 			}
-			var logFile = GetLogFile(directory);
+			var logFile = GetLogFile(directory.FullName);
 			File.Create(logFile).Dispose();
 			try
 			{
