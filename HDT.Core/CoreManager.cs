@@ -2,7 +2,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using HDT.Core.Hearthstone;
+using HDT.Core.HsReplay;
 using HDT.Core.Utility.Logging;
 using HearthMirror.Enums;
 using HearthMirror.Objects;
@@ -19,11 +21,11 @@ namespace HDT.Core
 		private readonly SceneModeWatcher _sceneModeWatcher;
 		private readonly ArenaWatcher _arenaWatcher;
 		private readonly BrawlInfoWatcher _brawlInfoWatcher;
+		private readonly DeckWatcher _deckWatcher;
 		private Process _currentProcess;
 		public Game CurrentGame { get; private set; }
 		public Game PreviousGame { get; private set; }
 		public GameMetaData MetaData { get; }
-
 
 		public CoreManager()
 		{
@@ -37,19 +39,35 @@ namespace HDT.Core
 			_arenaWatcher.OnCompleteDeck += ArenaWatcherOnOnCompleteDeck;
 			_brawlInfoWatcher = new BrawlInfoWatcher();
 			_brawlInfoWatcher.OnBrawlInfoChanged += BrawlInfoWatcherOnOnBrawlInfoChanged;
+			_deckWatcher = new DeckWatcher();
+			_deckWatcher.OnSelectedDeckChanged += DeckWatcher_OnSelectedDeckChanged;
 			MetaData = new GameMetaData();
+		}
+
+		private void DeckWatcher_OnSelectedDeckChanged(Deck deck)
+		{
+			MetaData.Deck = deck;
+			Log.Info($"Name={deck.Name}, Hero={deck.Hero}, Id={deck.Id}");
 		}
 
 		private void BrawlInfoWatcherOnOnBrawlInfoChanged(BrawlInfo brawlInfo)
 		{
 			MetaData.BrawlInfo = brawlInfo;
+			Log.Info($"Wins={brawlInfo.Wins}, Losses={brawlInfo.Losses}");
 		}
 
 		private void ArenaWatcherOnOnCompleteDeck(object sender, CompleteDeckEventArgs args)
 		{
 			MetaData.Deck = args.Info.Deck;
 			MetaData.ArenaInfo = args.Info;
+			Log.Info($"Hero={args.Info.Deck.Hero}, Wins={args.Info.Wins}, Losses={args.Info.Losses}");
 		}
+
+		private readonly SceneMode[] _deckScenes =
+		{
+			SceneMode.ADVENTURE, SceneMode.FRIENDLY, SceneMode.TAVERN_BRAWL,
+			SceneMode.TOURNAMENT
+		};
 
 		private void SceneModeWatcher_OnSceneModeChanged(SceneMode current, SceneMode previous)
 		{
@@ -73,6 +91,11 @@ namespace HDT.Core
 				_brawlInfoWatcher.Run();
 			else if(previous == SceneMode.TAVERN_BRAWL)
 				_brawlInfoWatcher.Stop();
+
+			if(_deckScenes.Contains(current))
+				_deckWatcher.Run();
+			else if(_deckScenes.Contains(previous))
+				_deckWatcher.Stop();
 		}
 
 		private async void Process_OnExit(Process proc)

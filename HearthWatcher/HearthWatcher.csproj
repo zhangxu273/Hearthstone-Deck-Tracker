@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="ArenaWatcher.cs" />
     <Compile Include="BrawlInfoWatcher.cs" />
+    <Compile Include="DeckWatcher.cs" />
     <Compile Include="EventArgs\CardPickedEventArgs.cs" />
     <Compile Include="EventArgs\ChoicesChangedEventArgs.cs" />
     <Compile Include="EventArgs\CompleteDeckEventArgs.cs" />
