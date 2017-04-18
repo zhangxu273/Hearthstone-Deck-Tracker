@@ -47,6 +47,8 @@ namespace HDT.Core.LogParsers
 		public event Action OnEndSpectator;
 		public event Action OnBlockEnd;
 
+		private bool _created;
+
 		private EntityData ParseEntity(string entity)
 		{
 			int id;
@@ -65,6 +67,16 @@ namespace HDT.Core.LogParsers
 
 		public void Parse(LogLine line)
 		{
+			if(!_created && line.LineContent.Contains("CREATE_GAME"))
+			{
+				_created = true;
+				OnCreateGame?.Invoke();
+				return;
+			}
+
+			if(!_created)
+				return;
+			
 			var match = GameEntityRegex.Match(line.LineContent);
 			if(match.Success)
 			{
@@ -134,12 +146,6 @@ namespace HDT.Core.LogParsers
 				var id = int.Parse(match.Groups["id"].Value);
 				var cardId = match.Groups["cardId"].Value.Trim();
 				OnBlockStart?.Invoke(new BlockData(type, id, cardId));
-				return;
-			}
-
-			if(line.LineContent.Contains("CREATE_GAME"))
-			{
-				OnCreateGame?.Invoke();
 				return;
 			}
 

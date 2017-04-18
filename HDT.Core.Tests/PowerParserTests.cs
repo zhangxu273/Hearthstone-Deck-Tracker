@@ -16,13 +16,14 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			EntityData entityData = null;
 			parser.OnGameEntity += (data) => entityData = data;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power",
 				"D 11:06:05.2789766 PowerTaskList.DebugPrintPower() -         GameEntity EntityID=1"));
 			Assert.IsNotNull(entityData);
 			Assert.AreEqual(entityData.Id, 1);
 			Assert.IsNull(entityData.Zone);
 			Assert.IsNull(entityData.CardId);
-			Assert.IsNull(entityData.Name);
+			Assert.AreEqual(entityData.Name, "GameEntity");
 		}
 
 		[TestMethod]
@@ -31,6 +32,7 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			PlayerEntityData entityData = null;
 			parser.OnPlayerEntity += (data) => entityData = data;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power",
 				"D 11:06:05.2794779 PowerTaskList.DebugPrintPower() -         Player EntityID=2 PlayerID=1 GameAccountId=[hi=144115198130930503 lo=15856412]"));
 			Assert.IsNotNull(entityData);
@@ -47,6 +49,7 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			EntityData entityData = null;
 			parser.OnFullEntity += (data) => entityData = data;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power",
 				"D 11:06:05.2930114 PowerTaskList.DebugPrintPower() -     FULL_ENTITY - Updating [name=Garrosh Hellscream id=64 zone=PLAY zonePos=0 cardId=HERO_01 player=1] CardID=HERO_01"));
 			Assert.IsNotNull(entityData);
@@ -63,6 +66,7 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			EntityData entityData = null;
 			parser.OnFullEntity += (data) => entityData = data;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power",
 				"D 11:06:05.2915068 PowerTaskList.DebugPrintPower() -     FULL_ENTITY - Updating [name=UNKNOWN ENTITY [cardType=INVALID] id=33 zone=DECK zonePos=0 cardId= player=1] CardID="));
 			Assert.IsNotNull(entityData);
@@ -79,6 +83,7 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			TagChangeData tagChangeData = null;
 			parser.OnTagChange += (data) => tagChangeData = data;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power", "D 11:06:06.4768941 PowerTaskList.DebugPrintPower() -         tag=HEALTH value=4"));
 			Assert.IsNotNull(tagChangeData);
 			Assert.IsNull(tagChangeData.EntityId);
@@ -95,6 +100,7 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			TagChangeData tagChangeData = null;
 			parser.OnTagChange += (data) => tagChangeData = data;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power",
 				"D 11:06:35.0269603 PowerTaskList.DebugPrintPower() -     TAG_CHANGE Entity=The Innkeeper tag=MULLIGAN_STATE value=DONE"));
 			Assert.IsNotNull(tagChangeData);
@@ -111,6 +117,7 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			TagChangeData tagChangeData = null;
 			parser.OnTagChange += (data) => tagChangeData = data;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power",
 				"D 11:06:35.0274603 PowerTaskList.DebugPrintPower() -     TAG_CHANGE Entity=[name=UNKNOWN ENTITY [cardType=INVALID] id=15 zone=DECK zonePos=0 cardId= player=1] tag=ZONE_POSITION value=1"));
 			Assert.IsNotNull(tagChangeData);
@@ -128,6 +135,7 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			TagChangeData tagChangeData = null;
 			parser.OnTagChange += (data) => tagChangeData = data;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power", "D 11:06:05.2403474 GameState.DebugPrintPower() - TAG_CHANGE Entity=1 tag=STATE value=RUNNING"));
 			Assert.IsNotNull(tagChangeData);
 			Assert.IsNull(tagChangeData.EntityName);
@@ -143,6 +151,7 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			EntityData entityData = null;
 			parser.OnShowEntity += (data) => entityData = data;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power", "D 11:06:06.4768941 PowerTaskList.DebugPrintPower() -     SHOW_ENTITY - Updating Entity=[name=UNKNOWN ENTITY [cardType=INVALID] id=24 zone=DECK zonePos=0 cardId= player=1] CardID=EX1_604"));
 			Assert.IsNotNull(entityData);
 			Assert.IsNull(entityData.Name);
@@ -161,11 +170,22 @@ namespace HDT.Core.Tests
 		}
 
 		[TestMethod]
+		public void TestCreateGameRequired()
+		{
+			var parser = new PowerParser();
+			var success = false;
+			parser.OnEndSpectator += () => success = true;
+			parser.Parse(new LogLine("Power", "D 11:06:06.4778733 ... End Spectator ..."));
+			Assert.IsFalse(success);
+		}
+
+		[TestMethod]
 		public void TestEndSpectator()
 		{
 			var parser = new PowerParser();
 			var success = false;
 			parser.OnEndSpectator += () => success = true;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power", "D 11:06:06.4778733 ... End Spectator ..."));
 			Assert.IsTrue(success);
 		}
@@ -176,6 +196,7 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			var success = false;
 			parser.OnBlockEnd += () => success = true;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power", "D 11:06:06.4778733 PowerTaskList.DebugPrintPower() - BLOCK_END"));
 			Assert.IsTrue(success);
 		}
@@ -186,6 +207,7 @@ namespace HDT.Core.Tests
 			var parser = new PowerParser();
 			BlockData blockData = null;
 			parser.OnBlockStart += (data) => blockData = data;
+			parser.Parse(new LogLine("Power", "D 11:00:00.0000000 PowerTaskList.DebugPrintPower() - CREATE_GAME"));
 			parser.Parse(new LogLine("Power", "D 11:06:49.8757851 PowerTaskList.DebugPrintPower() - BLOCK_START BlockType=PLAY Entity=[name=Sir Finley Mrrgglton id=7 zone=HAND zonePos=6 cardId=LOE_076 player=1] EffectCardId= EffectIndex=0 Target=0"));
 			Assert.IsNotNull(blockData);
 			Assert.AreEqual(blockData.Type, "PLAY");

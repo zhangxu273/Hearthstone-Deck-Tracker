@@ -28,7 +28,7 @@ namespace HearthWatcher
 			if (executable.Directory == null)
 				throw new Exception("Hearthstone directory not found");
 			var logDirectory = Path.Combine(executable.Directory.FullName, "Logs");
-			var entryPoint = _logFileWatcher.FindEntryPoint(logDirectory, "GameState.DebugPrintPower() - CREATE_GAME");
+			var entryPoint = _logFileWatcher.FindEntryPoint(logDirectory, new[] {"GameState.DebugPrintPower() - CREATE_GAME", "tag=STATE value=COMPLETE"});
 			_logFileWatcher.OnLogFileFound += (log) => OnPowerLogFound?.Invoke();
 			_logFileWatcher.OnLogLineIgnored += (line) => OnLineIgnored?.Invoke(line);
 			_logFileWatcher.Start(entryPoint, logDirectory);

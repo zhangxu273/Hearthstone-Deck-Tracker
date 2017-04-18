@@ -8,6 +8,7 @@ using HDT.Core.Utility;
 using HDT.Core.Utility.Logging;
 using HearthMirror.Objects;
 using HearthWatcher;
+using HearthWatcher.LogReader;
 
 namespace HDT.Core.Hearthstone
 {
@@ -42,12 +43,18 @@ namespace HDT.Core.Hearthstone
 			_powerLogWatcher = new PowerLogWatcher(process);
 			_powerLogWatcher.OnPowerLogFound += OnPowerLogFound;
 			_powerLogWatcher.OnPowerTaskList += _powerParser.Parse;
-			_powerLogWatcher.OnGameState += (line) => _gameStateLog.Add(line.Line);
+			_powerLogWatcher.OnGameState += PowerLog_OnGameState;
 			_powerLogWatcher.Run();
 
 			GameState.OnModified += GameEvents.OnGameEnd(End);
 			GameState.OnModified += GameEvents.OnCardPlayed(entity => Log.Info($"Played: {entity.Id} - {entity.CardId}"));
 			GameState.OnModified += GameEvents.OnCardDrawn(entity => Log.Info($"Drawn: {entity.Id} - {entity.CardId}"));
+		}
+
+		private void PowerLog_OnGameState(LogLine line)
+		{
+			if(_gameStateLog.Count > 0 || line.LineContent.Contains("CREATE_GAME"))
+				_gameStateLog.Add(line.Line);
 		}
 
 		private void OnMatchInfoChanged(MatchInfo matchInfo)
