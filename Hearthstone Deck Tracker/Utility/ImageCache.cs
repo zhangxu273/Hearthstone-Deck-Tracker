@@ -89,7 +89,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 		private static void LoadResource(Card card, out Bitmap bitmap)
 		{
 			bitmap = null;
-			var set = card.CardSet + (card.Collectible ? "" : "_NC");
+			var set = card.Set + (card.Collectible ? "" : "_NC");
 			if(LoadedSets.Contains(set))
 				return;
 			LoadedSets.Add(set);

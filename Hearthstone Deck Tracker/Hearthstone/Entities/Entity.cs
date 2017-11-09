@@ -46,7 +46,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone.Entities
 
 		[JsonIgnore]
 		// TODO: Replace CardSet check once the ICC update goes live
-		public bool IsPlayableHero => IsHero && Card.CardSet != CardSet.CORE && Card.CardSet != CardSet.HERO_SKINS && Card.Collectible;
+		public bool IsPlayableHero => IsHero && Card.Set != CardSet.CORE && Card.Set != CardSet.HERO_SKINS && Card.Collectible;
 
 		[JsonIgnore]
 		public bool IsActiveDeathrattle => HasTag(GameTag.DEATHRATTLE) && GetTag(GameTag.DEATHRATTLE) == 1;
@@ -90,7 +90,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone.Entities
 		[JsonIgnore]
 		public Card Card => _cachedCard ??
 			(_cachedCard = Database.GetCardFromId(CardId) ??
-				new Card(string.Empty, null, Rarity.FREE, "unknown", "unknown", 0, "unknown", 0, 1, "", "", 0, 0, "unknown", null, 0, "", ""));
+				new Card(string.Empty, 0));
 
 		[JsonIgnore]
 		public int Attack => GetTag(GameTag.ATK);

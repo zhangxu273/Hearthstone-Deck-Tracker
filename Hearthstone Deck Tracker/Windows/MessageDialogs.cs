@@ -195,17 +195,17 @@ namespace Hearthstone_Deck_Tracker.Windows
 				if(card.Count == 2)
 					message += " x2";
 
-				if(card.Set == HearthDbConverter.SetConverter(CardSet.NAXX))
+				if(card.Set == CardSet.NAXX)
 					sets.Add("and the Naxxramas DLC ");
-				else if(card.Set == HearthDbConverter.SetConverter(CardSet.PROMO))
+				else if(card.Set == CardSet.PROMO)
 					sets.Add("and Promotion cards ");
-				else if(card.Set == HearthDbConverter.SetConverter(CardSet.HOF))
+				else if(card.Set == CardSet.HOF)
 					sets.Add("and the Hall of Fame cards ");
-				else if(card.Set == HearthDbConverter.SetConverter(CardSet.BRM))
+				else if(card.Set == CardSet.BRM)
 					sets.Add("and the Blackrock Mountain DLC ");
-				else if(card.Set == HearthDbConverter.SetConverter(CardSet.LOE))
+				else if(card.Set == CardSet.LOE)
 					sets.Add("and the League of Explorers DLC ");
-				else if(card.Set == HearthDbConverter.SetConverter(CardSet.KARA))
+				else if(card.Set == CardSet.KARA)
 					sets.Add("and the One Night in Karazhan DLC ");
 				else
 					totalDust += card.DustCost * card.Count;

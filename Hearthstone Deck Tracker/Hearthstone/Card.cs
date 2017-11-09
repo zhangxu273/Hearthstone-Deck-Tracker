@@ -11,7 +11,6 @@ using System.Windows.Media;
 using System.Xml.Serialization;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Annotations;
-using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using Hearthstone_Deck_Tracker.Utility.Themes;
 
@@ -26,14 +25,11 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		private HearthDb.Card _dbCard;
 
 		private readonly Regex _overloadRegex = new Regex(@"Overload:.+?\((?<value>(\d+))\)");
-		private int _count;
-		private string _englishText;
+		private int _count = 1;
 		private int _inHandCount;
 		private bool _isCreated;
 		private bool _loaded;
-		private string _localizedName;
 		private int? _overload;
-		private string _text;
 		private bool _wasDiscarded;
 		private string _id;
 
@@ -41,15 +37,15 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		private static readonly Dictionary<string, Dictionary<int, CardImageObject>> CardImageCache =
 			new Dictionary<string, Dictionary<int, CardImageObject>>();
 
-		[XmlIgnore]
-		public List<string> AlternativeNames = new List<string>();
+		public IEnumerable<string> AlternativeNames => _dbCard != null ? Config.Instance.AlternativeLanguages
+				.Select(x => x != Config.Instance.SelectedLanguage && Enum.TryParse(x, out Locale lang) ? _dbCard.GetLocName(lang) : null) : new List<string>();
 
-		[XmlIgnore]
-		public List<string> AlternativeTexts = new List<string>();
+		public IEnumerable<string> AlternativeTexts => _dbCard != null ? Config.Instance.AlternativeLanguages
+				.Select(x => x != Config.Instance.SelectedLanguage && Enum.TryParse(x, out Locale lang) ? _dbCard.GetLocText(lang) : null) : new List<string>();
 
 		public string Id
 		{
-			get { return _id; }
+			get => _id;
 			set
 			{
 				_id = value;
@@ -58,65 +54,34 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			}
 		}
 
-		[XmlIgnore]
 		public int DbfIf => _dbCard?.DbfId ?? 0;
 
-		/// The mechanics attribute, such as windfury or taunt, comes from the cardDB json file
-		[XmlIgnore]
-		public string[] Mechanics;
+		public string[] Mechanics => _dbCard?.Mechanics ?? new string[0];
 
-		[XmlIgnore]
-		public string PlayerClass;
+		public CardClass PlayerClass => _dbCard?.Class ?? CardClass.INVALID;
 
-		[XmlIgnore]
-		public Rarity Rarity;
+		public Rarity Rarity => _dbCard?.Rarity ?? Rarity.INVALID;
 
 		public Card()
 		{
 			Count = 1;
 		}
 
-		public Card(string id, string playerClass, Rarity rarity, string type, string name, int cost, string localizedName, int inHandCount,
-		            int count, string text, string englishText, int attack, int health, string race, string[] mechanics, int? durability,
-		            string artist, string set, List<string> alternativeNames = null, List<string> alternativeTexts = null, HearthDb.Card dbCard = null)
+		public Card(string id, int count, int inHandCount = 0, HearthDb.Card dbCard = null)
 		{
+			_dbCard = dbCard;
 			Id = id;
-			PlayerClass = playerClass;
-			Rarity = rarity;
-			Type = type;
-			Name = name;
-			Cost = cost;
-			LocalizedName = localizedName;
 			InHandCount = inHandCount;
 			Count = count;
-			Text = text;
-			EnglishText = englishText;
-			Attack = attack;
-			Health = health;
-			Race = race;
-			Durability = durability;
-			Mechanics = mechanics;
-			Artist = artist;
-			Set = set;
-			if(alternativeNames != null)
-				AlternativeNames = alternativeNames;
-			if(alternativeTexts != null)
-				AlternativeTexts = alternativeTexts;
-			_dbCard = dbCard;
 		}
-
-		private Locale? _selectedLanguage;
 
 		private Locale SelectedLanguage
 		{
 			get
 			{
-				if(_selectedLanguage.HasValue)
-					return _selectedLanguage.Value;
 				if(!Enum.TryParse(Config.Instance.SelectedLanguage, out Locale lang))
 					lang = Locale.enUS;
-				_selectedLanguage = lang;
-				return _selectedLanguage.Value;
+				return lang;
 			}
 		}
 
@@ -124,36 +89,12 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		{
 			_dbCard = dbCard;
 			Id = dbCard.Id;
-			Count = 1;
-			PlayerClass = HearthDbConverter.ConvertClass(dbCard.Class);
-			Rarity = dbCard.Rarity;
-			Type = HearthDbConverter.CardTypeConverter(dbCard.Type);
-			Name = dbCard.GetLocName(Locale.enUS);
-			Cost = dbCard.Cost;
-			LocalizedName = dbCard.GetLocName(SelectedLanguage);
-			Text = dbCard.GetLocText(SelectedLanguage);
-			EnglishText = dbCard.GetLocText(Locale.enUS);
-			Attack = dbCard.Attack;
-			Health = dbCard.Health;
-			Race = HearthDbConverter.RaceConverter(dbCard.Race);
-			Durability = dbCard.Durability > 0 ? (int?)dbCard.Durability : null;
-			Mechanics = dbCard.Mechanics;
-			Artist = dbCard.ArtistName;
-			Set = HearthDbConverter.SetConverter(dbCard.Set);
-			foreach(var altLangStr in Config.Instance.AlternativeLanguages)
-			{
-				if(Enum.TryParse(altLangStr, out Locale altLang))
-				{
-					AlternativeNames.Add(dbCard.GetLocName(altLang));
-					AlternativeTexts.Add(dbCard.GetLocText(altLang));
-				}
-			}
 			_loaded = true;
 		}
 
 		public int Count
 		{
-			get { return _count; }
+			get => _count;
 			set
 			{
 				_count = value;
@@ -165,94 +106,62 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		[XmlIgnore]
 		public bool Jousted { get; set; }
 
-		[XmlIgnore]
-		public int Attack { get; set; }
+		public int Attack => _dbCard?.Attack ?? 0;
 
-		[XmlIgnore]
-		public int Health { get; set; }
+		public int Health => _dbCard?.Health ?? 0;
 
-		[XmlIgnore]
-		public string Text
-		{
-			get { return CleanUpText(_text); }
-			set { _text = value; }
-		}
+		public string Text => CleanText(_dbCard?.GetLocText(SelectedLanguage) ?? string.Empty);
 
-		[XmlIgnore]
-		public string FormattedText => CleanUpText(_text, false) ?? "";
+		public string FormattedText => CleanText(_dbCard?.GetLocText(SelectedLanguage), false) ?? "";
 
-		[XmlIgnore]
-		public string EnglishText
-		{
-			get { return CleanUpText(string.IsNullOrEmpty(_englishText) ? Text : _englishText); }
-			set { _englishText =value; }
-		}
+		public string EnglishText => CleanText(_dbCard?.GetLocText(Locale.enUS) ?? string.Empty);
 
-		[XmlIgnore]
 		public string AlternativeLanguageText => GetAlternativeText(false);
 
-		[XmlIgnore]
 		public string FormattedAlternativeLanguageText => GetAlternativeText(true);
 
 		private string GetAlternativeText(bool formatted)
 		{
 			var result = "";
-			for(var i = 0; i < AlternativeNames.Count; ++i)
+			var names = AlternativeNames.ToList();
+			var texts = AlternativeTexts.ToList();
+			for(var i = 0; i < names.Count; ++i)
 			{
 				if(i > 0)
 					result += "-\n";
-				result += "[" + AlternativeNames[i] + "]\n";
-				if(AlternativeTexts[i] != null)
-					result += CleanUpText(AlternativeTexts[i], !formatted) + "\n";
+				result += "[" + names[i] + "]\n";
+				if(texts[i] != null)
+					result += CleanText(texts[i], !formatted) + "\n";
 			}
 			return result.TrimEnd(' ', '\n');
 		}
 
-		[XmlIgnore]
-		public Visibility ShowAlternativeLanguageTextInTooltip => AlternativeNames.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+		public Visibility ShowAlternativeLanguageTextInTooltip => AlternativeNames.Any(x => x != null) ? Visibility.Visible : Visibility.Collapsed;
 
-		[XmlIgnore]
-		public bool HasVisibleStats => Type != "Spell" && Type != "Enchantment" && Type != "Hero Power" && !IsPlayableHeroCard;
+		public bool HasVisibleStats => Type != CardType.SPELL && Type != CardType.ENCHANTMENT && Type != CardType.HERO_POWER && !IsPlayableHeroCard;
 
-		[XmlIgnore]
 		public Visibility ShowIconsInTooltip => HasVisibleStats ? Visibility.Visible : Visibility.Hidden;
 
-		[XmlIgnore]
 		public Visibility ShowArmorIconInTooltip => IsPlayableHeroCard ? Visibility.Visible : Visibility.Hidden;
 
-		[XmlIgnore]
 		public Visibility ShowHealthValueInTooltip => HasVisibleStats || IsPlayableHeroCard ? Visibility.Visible : Visibility.Hidden;
 
-		[XmlIgnore]
-		public string Set { get; set; }
+		public CardSet Set => _dbCard?.Set ?? CardSet.INVALID;
 
-		public CardSet? CardSet => _dbCard?.Set;
+		public Race Race => _dbCard?.Race ?? Race.INVALID;
 
-		[XmlIgnore]
-		public string Race { get; set; }
+		public int Durability => _dbCard?.Durability ?? 0;
 
-		[XmlIgnore]
-		public string RaceOrType => Race ?? Type;
-
-		[XmlIgnore]
-		public int? Durability { get; set; }
-
-		[XmlIgnore]
 		public int ArmorDurabilityOrHealth => (IsPlayableHeroCard ? _dbCard?.Armor : Durability) ?? Health;
 
-		[XmlIgnore]
-		public string Type { get; set; }
+		public CardType Type => _dbCard?.Type ?? CardType.INVALID;
 
-		[XmlIgnore]
-		public string Name { get; set; }
+		public string Name => _dbCard?.GetLocName(Locale.enUS) ?? string.Empty;
 
-		[XmlIgnore]
-		public int Cost { get; set; }
+		public int Cost => _dbCard?.Cost ?? 0;
 
-		[XmlIgnore]
-		public bool IsPlayableHeroCard => Type == "Hero" && CardSet != HearthDb.Enums.CardSet.CORE && CardSet != HearthDb.Enums.CardSet.HERO_SKINS;
+		public bool IsPlayableHeroCard => Type == CardType.HERO && Set != CardSet.CORE && Set != CardSet.HERO_SKINS;
 
-		[XmlIgnore]
 		public int Overload
 		{
 			get
@@ -290,22 +199,16 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			}
 		}
 
-		[XmlIgnore]
-		public string Artist { get; set; }
+		public string Artist => _dbCard?.ArtistName ?? string.Empty;
 
-		[XmlIgnore]
-		public string LocalizedName
-		{
-			get { return string.IsNullOrEmpty(_localizedName) ? Name : _localizedName; }
-			set { _localizedName = value; }
-		}
+		public string LocalizedName => _dbCard?.GetLocName(SelectedLanguage) ?? Name;
 
-		public string[] EntourageCardIds => _dbCard != null ? _dbCard.EntourageCardIds : new string[0];
+		public string[] EntourageCardIds => _dbCard?.EntourageCardIds ?? new string[0];
 
 		[XmlIgnore]
 		public int InHandCount
 		{
-			get { return _inHandCount; }
+			get => _inHandCount;
 			set
 			{
 				_inHandCount = value;
@@ -313,13 +216,12 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			}
 		}
 
-		[XmlIgnore]
-		public bool IsClassCard => GetPlayerClass != "Neutral";
+		public bool IsClassCard => PlayerClass >= CardClass.DRUID && PlayerClass <= CardClass.WARRIOR;
 
 		[XmlIgnore]
 		public bool IsCreated
 		{
-			get { return _isCreated; }
+			get => _isCreated;
 			set
 			{
 				_isCreated = value;
@@ -330,7 +232,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		[XmlIgnore]
 		public bool WasDiscarded
 		{
-			get { return _wasDiscarded; }
+			get => _wasDiscarded;
 			set
 			{
 				_wasDiscarded = value;
@@ -338,17 +240,12 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			}
 		}
 
-		public string GetPlayerClass => PlayerClass ?? "Neutral";
-
-		public bool IsClass(string playerClass)
+		public bool IsClass(CardClass playerClass)
 		{
-			if(GetPlayerClass == playerClass)
+			if(PlayerClass == playerClass)
 				return true;
-			var classGroup = _dbCard?.Entity.GetTag(GameTag.MULTI_CLASS_GROUP) ?? 0;
-			if(classGroup == 0)
-				return false;
-			return Helper.MultiClassGroups[(MultiClassGroup)classGroup]
-				.Any(x => string.Equals(x.ToString(), playerClass, StringComparison.CurrentCultureIgnoreCase));
+			var group = _dbCard?.Entity.GetTag(GameTag.MULTI_CLASS_GROUP) ?? 0;
+			return group != 0 && Helper.MultiClassGroups[(MultiClassGroup)group].Contains(playerClass);
 		}
 
 		public SolidColorBrush ColorPlayer
@@ -425,26 +322,21 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		[XmlIgnore]
 		public bool HighlightInHand { get; set; }
 
-		[XmlIgnore]
-		public string FlavorText => CleanUpText(_dbCard?.GetLocFlavorText(SelectedLanguage)) ?? "";
+		public string FlavorText => CleanText(_dbCard?.GetLocFlavorText(SelectedLanguage)) ?? "";
 		
-		[XmlIgnore]
-		public string FormattedFlavorText => CleanUpText(_dbCard?.GetLocFlavorText(SelectedLanguage), false) ?? "";
+		public string FormattedFlavorText => CleanText(_dbCard?.GetLocFlavorText(SelectedLanguage), false) ?? "";
 
-		[XmlIgnore]
 		public bool Collectible => _dbCard?.Collectible ?? false;
 
-		public object Clone() => new Card(Id, PlayerClass, Rarity, Type, Name, Cost, LocalizedName, InHandCount, Count, _text, EnglishText, Attack,
-										  Health, Race, Mechanics, Durability, Artist, Set, AlternativeNames, AlternativeTexts, _dbCard);
+		public object Clone() => new Card(Id, Count, InHandCount, _dbCard);
 
 		public override string ToString() => Name + "(" + Count + ")";
 
 		public override bool Equals(object card)
 		{
-			if(!(card is Card))
+			if(!(card is Card c))
 				return false;
-			var c = (Card)card;
-			return c.Name == Name;
+			return c.Id == Id;
 		}
 
 		public bool EqualsWithCount(Card card) => card.Id == Id && card.Count == Count;
@@ -456,33 +348,15 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			if(_loaded)
 				return;
 
+			_loaded = true;
 			var stats = Database.GetCardFromId(Id);
 			if(stats == null)
 				return;
-			PlayerClass = stats.PlayerClass;
-			Rarity = stats.Rarity;
-			Type = stats.Type;
-			Name = stats.Name;
-			Cost = stats.Cost;
-			LocalizedName = stats.LocalizedName;
-			InHandCount = stats.InHandCount;
-			Text = stats._text;
-			EnglishText = stats.EnglishText;
-			Attack = stats.Attack;
-			Health = stats.Health;
-			Race = stats.Race;
-			Durability = stats.Durability;
-			Mechanics = stats.Mechanics;
-			Artist = stats.Artist;
-			Set = stats.Set;
-			AlternativeNames = stats.AlternativeNames;
-			AlternativeTexts = stats.AlternativeTexts;
 			_dbCard = stats._dbCard;
-			_loaded = true;
 			OnPropertyChanged();
 		}
 
-		private static string CleanUpText(string text, bool replaceTags = true)
+		private static string CleanText(string text, bool replaceTags = true)
 		{
 			if (replaceTags)
 				text = text?.Replace("<b>", "").Replace("</b>", "").Replace("<i>", "").Replace("</i>", "");
@@ -495,59 +369,6 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
-	}
-
-	internal class CardImageObject
-	{
-		public DrawingBrush Image { get; }
-		public int Count { get; }
-		public bool Jousted { get; }
-		public bool ColoredFrame { get; }
-		public bool ColoredGem { get; }
-		public bool Created { get; }
-		public string Theme { get; }
-		public int TextColorHash { get; }
-
-		public CardImageObject(DrawingBrush image, Card card) : this(card)
-		{
-			Image = image;
-		}
-
-		public CardImageObject(Card card)
-		{
-			Count = card.Count;
-			Jousted = card.Jousted;
-			ColoredFrame = Config.Instance.RarityCardFrames;
-			ColoredGem = Config.Instance.RarityCardGems;
-			Theme = ThemeManager.CurrentTheme?.Name;
-			TextColorHash = card.ColorPlayer.Color.GetHashCode();
-			Created = card.IsCreated;
-		}
-
-		public override bool Equals(object obj)
-		{
-			var cardObj = obj as CardImageObject;
-			return cardObj != null && Equals(cardObj);
-		}
-
-		protected bool Equals(CardImageObject other)
-			=> Count == other.Count && Jousted == other.Jousted && ColoredFrame == other.ColoredFrame && ColoredGem == other.ColoredGem
-				&& string.Equals(Theme, other.Theme) && TextColorHash == other.TextColorHash && Created == other.Created;
-
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				var hashCode = Count;
-				hashCode = (hashCode * 397) ^ Jousted.GetHashCode();
-				hashCode = (hashCode * 397) ^ ColoredFrame.GetHashCode();
-				hashCode = (hashCode * 397) ^ ColoredGem.GetHashCode();
-				hashCode = (hashCode * 397) ^ (Theme?.GetHashCode() ?? 0);
-				hashCode = (hashCode * 397) ^ TextColorHash;
-				hashCode = (hashCode * 397) ^ Created.GetHashCode();
-				return hashCode;
-			}
 		}
 	}
 }

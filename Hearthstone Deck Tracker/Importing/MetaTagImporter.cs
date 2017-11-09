@@ -44,7 +44,7 @@ namespace Hearthstone_Deck_Tracker.Importing
 
 				var heroId = GetMetaProperty(metaNodes, "x-hearthstone:deck:hero");
 				if(!string.IsNullOrEmpty(heroId))
-					deck.Class = Database.GetCardFromId(heroId).PlayerClass;
+					deck.Class = HearthDbConverter.ConvertClass(Database.GetCardFromId(heroId).PlayerClass);
 				var cardList = GetMetaProperty(metaNodes, "x-hearthstone:deck:cards").Split(',');
 				foreach(var idGroup in cardList.GroupBy(x => x))
 				{
@@ -52,7 +52,7 @@ namespace Hearthstone_Deck_Tracker.Importing
 					card.Count = idGroup.Count();
 					deck.Cards.Add(card);
 					if(deck.Class == null && card.IsClassCard)
-						deck.Class = card.PlayerClass;
+						deck.Class = HearthDbConverter.ConvertClass(card.PlayerClass);
 				}
 				return deck;
 			}

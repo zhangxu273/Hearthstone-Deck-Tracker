@@ -69,7 +69,6 @@
                           Visibility="{Binding Visibility, Source={x:Static options:AdvancedOptions.Instance}}"
                           Margin="5,5,0,0" Checked="CheckBoxDefaultFont_OnChecked"
                           Unchecked="CheckBoxDefaultFont_OnUnchecked" />
-                <Label Visibility="{Binding RestartLabelVisibility, RelativeSource={RelativeSource AncestorType=UserControl}}" Foreground="Red" Content="{lex:Loc Options_Tracker_General_Label_Restart}" />
             </StackPanel>
         </GroupBox>
         <CheckBox x:Name="CheckBoxAutoDeckDetection" Margin="10,5,0,0"

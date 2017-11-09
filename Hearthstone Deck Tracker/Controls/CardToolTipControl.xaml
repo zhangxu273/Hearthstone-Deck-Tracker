@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:hearthstoneDeckTracker="clr-namespace:Hearthstone_Deck_Tracker"
              xmlns:utility="clr-namespace:Hearthstone_Deck_Tracker.Utility"
+             Name="CardTooltip"
              mc:Ignorable="d" Width="200" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Border BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1">
@@ -48,7 +49,7 @@
                        Visibility="{Binding ShowAlternativeLanguageTextInTooltip}"
                        HorizontalAlignment="Center" TextWrapping="Wrap" Margin="10,10,10,0" TextAlignment="Center" />
             <Grid Grid.Row="3" Background="{DynamicResource AccentColorBrush}">
-                <hearthstoneDeckTracker:HearthstoneTextBlock Text="{Binding RaceOrType}" Width="200" FontSize="14"
+                <hearthstoneDeckTracker:HearthstoneTextBlock Text="{Binding Path=RaceOrType, ElementName=CardTooltip}" Width="200" FontSize="14"
                                             Height="20" TextAlignment="Center" />
             </Grid>
         </Grid>

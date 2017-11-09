@@ -20,7 +20,7 @@ namespace Hearthstone_Deck_Tracker.Importing.Game.ImportOptions
 		public ExistingDeck(Deck deck, HearthMirror.Objects.Deck newDeck)
 		{
 			Deck = deck;
-			var tmp = new Deck { Cards = new ObservableCollection<Card>(newDeck.Cards.Select(x => new Card { Id = x.Id, Count = x.Count })) };
+			var tmp = new Deck { Cards = new ObservableCollection<Card>(newDeck.Cards.Select(x => new Card(x.Id, x.Count) )) };
 			MatchingCards = 0;
 			if(deck.HasVersions)
 			{

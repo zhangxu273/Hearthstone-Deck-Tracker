@@ -68,7 +68,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckExport
 			Helper.SortCardCollection(MissingCards, false);
 			HasMissingCards = missingCards.Any();
 			TotalDustCost = missingCards.Sum(x => x.DustCost);
-			RequiresKarazhan = missingCards.Any(c => c.Card.CardSet == CardSet.KARA);
+			RequiresKarazhan = missingCards.Any(c => c.Card.Set == CardSet.KARA);
 			var missingCardsCount = missingCards.Sum(c => c.Card.Count);
 			MissingCardsHeader = LocUtil.Get(LocMissingCardsHeader) + $" ({missingCardsCount})";
 			HasCollectionData = true;
@@ -272,7 +272,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckExport
 
 		public string LocalizedName => _card.LocalizedName;
 
-		public string CostString => _card.CardSet == CardSet.KARA ? "*" : DustCost.ToString();
+		public string CostString => _card.Set == CardSet.KARA ? "*" : DustCost.ToString();
 
 		public int DustCost => _card.Count * _card.DustCost;
 

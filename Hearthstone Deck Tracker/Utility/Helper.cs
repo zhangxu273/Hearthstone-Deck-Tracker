@@ -72,11 +72,11 @@ namespace Hearthstone_Deck_Tracker
 			"esES"
 		};
 
-		public static string[] WildOnlySets = new[]
+		public static CardSet[] WildOnlySets = 
 		{
 			CardSet.BRM, CardSet.LOE, CardSet.TGT, CardSet.HOF,
 			CardSet.FP1, CardSet.PE1, CardSet.PROMO
-		}.Select(HearthDbConverter.SetConverter).ToArray();
+		};
 
 		private static bool? _hearthstoneDirExists;
 

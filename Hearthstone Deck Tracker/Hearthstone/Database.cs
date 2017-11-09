@@ -21,7 +21,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			if(Cards.All.TryGetValue(cardId, out HearthDb.Card dbCard))
 				return new Card(dbCard);
 			Log.Warn("Could not find card with ID=" + cardId);
-			return UnknownCard;
+			return new Card(cardId, 1);
 		}
 
 		public static Card GetCardFromDbfId(int dbfId, bool collectible = true)
@@ -32,7 +32,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			if(card != null)
 				return new Card(card);
 			Log.Warn("Could not find card with DbfId=" + dbfId);
-			return UnknownCard;
+			return null;
 		}
 
 		public static Card GetCardFromName(string name, bool localized = false, bool showErrorMessage = true, bool collectible = true)
@@ -62,7 +62,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			}
 			if(showErrorMessage)
 				Log.Warn("Could not get card from name: " + name);
-			return UnknownCard;
+			return null;
 		}
 
 		public static List<Card> GetActualCards() => Cards.Collectible.Values.Select(x => new Card(x)).ToList();
@@ -75,7 +75,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			if(CardIds.HeroIdDict.TryGetValue(baseId, out var name))
 				return name;
 			var card = GetCardFromId(baseId);
-			if(string.IsNullOrEmpty(card?.Name) || card.Name == "UNKNOWN" || card.Type != "Hero")
+			if(string.IsNullOrEmpty(card?.Name) || card.Type != CardType.HERO)
 				return returnIdIfNotFound ? baseId : null;
 			return card.Name;
 		}
@@ -98,9 +98,5 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		}
 
 		public static bool IsActualCard(Card card) => card != null && Cards.Collectible.ContainsKey(card.Id);
-
-		public static Card UnknownCard => new Card(Cards.All[HearthDb.CardIds.NonCollectible.Neutral.Noooooooooooo]);
-
-		public static string UnknownCardId => HearthDb.CardIds.NonCollectible.Neutral.Noooooooooooo;
 	}
 }

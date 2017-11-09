@@ -42,7 +42,7 @@ namespace Hearthstone_Deck_Tracker.Importing
 					}
 
 					var card = Database.GetCardFromName(cardName.Replace("’", "'"), localizedNames);
-					if(string.IsNullOrEmpty(card?.Name) || card.Id == Database.UnknownCardId)
+					if(string.IsNullOrEmpty(card?.Name))
 						continue;
 					card.Count = count;
 
@@ -56,13 +56,13 @@ namespace Hearthstone_Deck_Tracker.Importing
 					else
 						deck.Cards.Add(card);
 				}
-				var classes = deck.Cards.Where(x => x.PlayerClass != null).GroupBy(x => x.PlayerClass).ToList();
+				var classes = deck.Cards.Where(x => x.IsClassCard).GroupBy(x => x.PlayerClass).ToList();
 				if(classes.Count != 1)
 				{
 					Log.Warn($"Could not identify a class for this deck. Found class cards for {classes.Count} classes.");
 					return null;
 				}
-				deck.Class = classes.Single().Key;
+				deck.Class = HearthDbConverter.ConvertClass(classes.Single().Key);
 				return deck;
 			}
 			catch(Exception ex)

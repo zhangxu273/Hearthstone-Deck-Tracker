@@ -60,10 +60,12 @@ namespace Hearthstone_Deck_Tracker.Importing.Websites
 				foreach(var info in cardInfo)
 				{
 					var card = Database.GetCardFromName(info.Name.Trim());
+					if(card == null)
+						continue;
 					card.Count = info.Count;
 					deck.Cards.Add(card);
-					if(string.IsNullOrEmpty(deck.Class) && card.PlayerClass != "Neutral")
-						deck.Class = card.PlayerClass;
+					if(string.IsNullOrEmpty(deck.Class) && card.IsClassCard)
+						deck.Class = HearthDbConverter.ConvertClass(card.PlayerClass);
 				}
 
 				return deck;
@@ -110,12 +112,14 @@ namespace Hearthstone_Deck_Tracker.Importing.Websites
 					var cardId = int.Parse(cardMatch.Groups[1].Value);
 					var cardCount = int.Parse(cardMatch.Groups[2].Value);
 					var cardName = cardDatabase[cardId];
-
 					var card = Database.GetCardFromName(cardName);
+					if(card == null)
+						continue;
+
 					card.Count = cardCount;
 					deck.Cards.Add(card);
-					if(string.IsNullOrEmpty(deck.Class) && card.PlayerClass != "Neutral")
-						deck.Class = card.PlayerClass;
+					if(string.IsNullOrEmpty(deck.Class) && card.IsClassCard)
+						deck.Class = HearthDbConverter.ConvertClass(card.PlayerClass);
 				}
 
 				return deck;

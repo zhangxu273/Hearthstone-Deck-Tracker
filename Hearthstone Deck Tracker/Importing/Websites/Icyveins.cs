@@ -32,10 +32,12 @@ namespace Hearthstone_Deck_Tracker.Importing.Websites
 					if(cardName.EndsWith(" BrM"))
 						cardName = cardName.Replace(" BrM", "");
 					var card = Database.GetCardFromName(cardName);
+					if(card == null)
+						continue;
 					card.Count = cardObj.quantity;
 					deck.Cards.Add(card);
-					if(string.IsNullOrEmpty(deck.Class) && card.PlayerClass != "Neutral")
-						deck.Class = card.PlayerClass;
+					if(string.IsNullOrEmpty(deck.Class) && card.IsClassCard)
+						deck.Class = HearthDbConverter.ConvertClass(card.PlayerClass);
 				}
 				return deck;
 			}

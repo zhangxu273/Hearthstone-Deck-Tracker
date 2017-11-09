@@ -10,6 +10,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Enums;
+using Hearthstone_Deck_Tracker.Hearthstone;
+using Hearthstone_Deck_Tracker.Utility.Themes;
 using Hearthstone_Deck_Tracker.Windows;
 
 #endregion
@@ -96,22 +98,6 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 			Config.Instance.TrackerCardToolTips = false;
 			Config.Save();
 			MessageDialogs.ShowRestartDialog();
-		}
-
-		private void CheckboxFullTextSearch_Checked(object sender, RoutedEventArgs e)
-		{
-			if(!_initialized)
-				return;
-			Config.Instance.UseFullTextSearch = true;
-			Config.Save();
-		}
-
-		private void CheckboxFullTextSearch_Unchecked(object sender, RoutedEventArgs e)
-		{
-			if(!_initialized)
-				return;
-			Config.Instance.UseFullTextSearch = false;
-			Config.Save();
 		}
 
 		private void TextboxTimerAlert_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -304,7 +290,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 
 			Config.Instance.SelectedLanguage = selectedLanguage;
 			Config.Save();
-			RestartLabelVisibility = Visibility.Visible;
+			ThemeManager.UpdateCards();
 		}
 
 		private void UpdateAlternativeLanguageList(string primaryLanguage)
@@ -340,19 +326,6 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 			}
 			Config.Instance.AlternativeLanguages = languages;
 			Config.Save();
-			RestartLabelVisibility = Visibility.Visible;
-		}
-
-		public Visibility RestartLabelVisibility
-		{
-			get { return _restartLabelVisibility; }
-			set
-			{
-				if(_restartLabelVisibility == value)
-					return;
-				_restartLabelVisibility = value;
-				OnPropertyChanged();
-			}
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;

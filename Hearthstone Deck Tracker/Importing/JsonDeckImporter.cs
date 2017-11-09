@@ -25,7 +25,7 @@ namespace Hearthstone_Deck_Tracker.Importing
 				foreach(var cardId in jsonDeck.CardIds.GroupBy(x => x))
 				{
 					var card = Database.GetCardFromId(cardId.Key);
-					if(card == null || card.Id == Database.UnknownCardId)
+					if(card == null)
 					{
 						Log.Warn($"Could not find card for {cardId}");
 						continue;
@@ -35,13 +35,13 @@ namespace Hearthstone_Deck_Tracker.Importing
 				}
 				if(!string.IsNullOrWhiteSpace(deck.Class))
 					return deck;
-				var classes = deck.Cards.Where(x => x.PlayerClass != null).GroupBy(x => x.PlayerClass).ToList();
+				var classes = deck.Cards.Where(x => x.IsClassCard).GroupBy(x => x.PlayerClass).ToList();
 				if(classes.Count != 1)
 				{
 					Log.Warn("Could not identify a class for this deck. None was provided.");
 					return null;
 				}
-				deck.Class = classes.Single().Key;
+				deck.Class = HearthDbConverter.ConvertClass(classes.Single().Key);
 				return deck;
 			}
 			catch(JsonReaderException)

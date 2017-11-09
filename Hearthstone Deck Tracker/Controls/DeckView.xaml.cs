@@ -118,7 +118,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 				CardSet.BRM,
 				CardSet.LOE,
 				CardSet.CORE
-			}.Select(HearthDbConverter.SetConverter).ToList();
+			};
 			var nonCraftableCards = new List<string>() {
 				Neutral.Cthun,
 				Neutral.BeckonerOfEvil

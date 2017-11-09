@@ -19,12 +19,12 @@ namespace Hearthstone_Deck_Tracker.Importing.Game
 			Deck = deck;
 			matches = matches ?? new List<Deck>();
 			var hero = Database.GetCardFromId(deck.Hero);
-			if(string.IsNullOrEmpty(hero?.PlayerClass) || hero.Id == Database.UnknownCardId)
+			if(!hero.IsClassCard)
 			{
 				Log.Error("No hero found for id " + deck.Hero);
 				return;
 			}
-			Class = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(hero.PlayerClass.ToLower());
+			Class = HearthDbConverter.ConvertClass(hero.PlayerClass);
 
 			var localOptions = localDecks.Where(d => d.Class == Class && !d.Archived && !d.IsArenaDeck)
 				.Select(x => new ExistingDeck(x, deck));

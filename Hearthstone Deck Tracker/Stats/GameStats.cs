@@ -485,7 +485,7 @@ namespace Hearthstone_Deck_Tracker.Stats
 
 		public void SetPlayerCards(HearthMirror.Objects.Deck deck, List<Card> revealedCards)
 		{
-			var cards = deck?.Cards.Select(c => new Card {Id = c.Id, Count = c.Count});
+			var cards = deck?.Cards.Select(c => new Card(c.Id, c.Count));
 			SetPlayerCards(cards, revealedCards);
 		}
 

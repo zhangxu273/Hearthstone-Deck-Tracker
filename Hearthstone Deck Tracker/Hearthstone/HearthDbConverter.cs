@@ -206,7 +206,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			var deck = new Deck
 			{
 				Name = hDbDeck.Name,
-				Class = Database.GetCardFromDbfId(hDbDeck.HeroDbfId, false).PlayerClass
+				Class = ConvertClass(Database.GetCardFromDbfId(hDbDeck.HeroDbfId, false).PlayerClass)
 			};
 			foreach(var c in hDbDeck.GetCards())
 				deck.Cards.Add(new Card(c.Key) { Count = c.Value });

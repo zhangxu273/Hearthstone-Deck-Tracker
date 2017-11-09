@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility;
@@ -20,11 +21,6 @@ namespace Hearthstone_Deck_Tracker
 	/// </summary>
 	public partial class ManaCurve
 	{
-		private const string Weapon = "Weapon";
-		private const string Enchantment = "Enchantment";
-		private const string Spell = "Spell";
-		private const string Minion = "Minion";
-		private const string Hero = "Hero";
 		private const string LocMechanics = "ManaCurve_Button_Mechanics";
 		private const string LocHide = "ManaCurve_Button_Hide";
 		private readonly ManaCostBar[] _manaCostBars;
@@ -114,17 +110,17 @@ namespace Hearthstone_Deck_Tracker
 				{
 					switch(card.Type)
 					{
-						case Weapon:
+						case CardType.WEAPON:
 							weapons[7] += card.Count;
 							break;
-						case Enchantment:
-						case Spell:
+						case CardType.ENCHANTMENT:
+						case CardType.SPELL:
 							spells[7] += card.Count;
 							break;
-						case Minion:
+						case CardType.MINION:
 							minions[7] += card.Count;
 							break;
-						case Hero:
+						case CardType.HERO:
 							heroes[7] += card.Count;
 							break;
 					}
@@ -136,23 +132,23 @@ namespace Hearthstone_Deck_Tracker
 					{
 						switch(card.Type)
 						{
-							case Weapon:
+							case CardType.WEAPON:
 								weapons[statValue] += card.Count;
 								break;
-							case Enchantment:
-							case Spell:
+							case CardType.ENCHANTMENT:
+							case CardType.SPELL:
 								spells[statValue] += card.Count;
 								break;
-							case Minion:
+							case CardType.MINION:
 								minions[statValue] += card.Count;
 								break;
-							case Hero:
+							case CardType.HERO:
 								heroes[statValue] += card.Count;
 								break;
 						}
 						counts[statValue] += card.Count;
 					}
-					else if(card.Type == Minion)
+					else if(card.Type == CardType.MINION)
 					{
 						minions[statValue] += card.Count;
 						counts[statValue] += card.Count;

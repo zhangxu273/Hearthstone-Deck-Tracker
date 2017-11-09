@@ -1,5 +1,6 @@
 using System.Linq;
 using System.IO;
+using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -35,8 +36,8 @@ namespace HDTTests.Hearthstone
 		[TestMethod]
 		public void TestDreadscaleIsActual()
 		{
-			Card c = new Card { Id = "AT_063t", Name = "Dreadscale", Type = "Minion" };
-			Assert.IsTrue(Database.IsActualCard(c));
+			var card = Database.GetCardFromId(HearthDb.CardIds.Collectible.Hunter.Dreadscale);
+			Assert.IsTrue(Database.IsActualCard(card));
 		}
 
 		[TestMethod]

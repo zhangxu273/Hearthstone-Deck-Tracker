@@ -37,5 +37,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 		public Deck CurrentDeck => ((DeckEditorViewModel)DataContext).Deck;
 
 		public void SetDeckName(string name) => ((DeckEditorViewModel)DataContext).DeckName = name;
+
+		internal void UpdateCards() => ((DeckEditorViewModel)DataContext).UpdateCards();
 	}
 }

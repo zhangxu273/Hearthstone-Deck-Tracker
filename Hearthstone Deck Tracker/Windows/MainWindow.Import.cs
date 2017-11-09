@@ -125,8 +125,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 					int.TryParse(splitEntry[1], out var count);
 					card.Count = count;
 
-					if(string.IsNullOrEmpty(deck.Class) && card.GetPlayerClass != "Neutral")
-						deck.Class = card.GetPlayerClass;
+					if(string.IsNullOrEmpty(deck.Class) && card.IsClassCard)
+						deck.Class = HearthDbConverter.ConvertClass(card.PlayerClass);
 
 					deck.Cards.Add(card);
 				}
@@ -192,8 +192,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 				deck.Cards.Add(card);
 
-				if(string.IsNullOrEmpty(deck.Class) && card.GetPlayerClass != "Neutral")
-					deck.Class = card.PlayerClass;
+				if(string.IsNullOrEmpty(deck.Class) && card.IsClassCard)
+					deck.Class = HearthDbConverter.ConvertClass(card.PlayerClass);
 			}
 
 			ShowDeckEditorFlyout(deck, true);
@@ -273,7 +273,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 		public void ImportArenaDeck(HearthMirror.Objects.Deck deck)
 		{
 			var arenaDeck = new Deck {
-				Class = Database.GetCardFromId(deck.Hero).PlayerClass,
+				Class = HearthDbConverter.ConvertClass(Database.GetCardFromId(deck.Hero).PlayerClass),
 				HsId = deck.Id,
 				Cards = new ObservableCollection<Card>(deck.Cards.Select(x =>
 				{

@@ -106,7 +106,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 		{
 			get
 			{
-				var cards = _allCards.Where(x => x.PlayerClass == null || x.PlayerClass == Deck.Class);
+				var cards = _allCards.Where(x => !x.IsClassCard || HearthDbConverter.ConvertClass(x.PlayerClass) == Deck.Class);
 				if(!string.IsNullOrEmpty(SearchText))
 				{
 					var input = CleanString(SearchText).ToLowerInvariant();
@@ -117,7 +117,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 				if(SelectedClassFilter != ClassFilter.All)
 					cards = cards.Where(c => c.IsClassCard == (SelectedClassFilter == ClassFilter.ClassOnly));
 				if(SelectedSetFilter != SetFilter.ALL)
-					cards = cards.Where(c => c.CardSet.HasValue && (int)c.CardSet.Value == (int)SelectedSetFilter);
+					cards = cards.Where(c => (int)c.Set == (int)SelectedSetFilter);
 				if(!IncludeWild || Deck.IsArenaDeck)
 					cards = cards.Where(c => !Helper.WildOnlySets.Contains(c.Set));
 				return cards;
@@ -127,7 +127,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 		private bool Matches(Card card, string searchStr)
 		{
 			var names = new[] { card.LocalizedName }.Concat(card.AlternativeNames).Where(x => !string.IsNullOrEmpty(x)).Select(x => Helper.RemoveDiacritics(x, true).ToLowerInvariant());
-			return names.Any(name => name.Contains(searchStr)) || (card.Race?.ToLowerInvariant().Contains(searchStr) ?? false);
+			return names.Any(name => name.Contains(searchStr)) || (HearthDbConverter.RaceConverter(card.Race)?.ToLowerInvariant().Contains(searchStr) ?? false);
 		}
 
 		private bool FullMatch(Card card, string searchStr)
@@ -425,6 +425,14 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 				Errors |= DeckEditorErrors.NameRequired;
 			else
 				Errors &= ~DeckEditorErrors.NameRequired;
+		}
+
+		internal void UpdateCards()
+		{
+			foreach(var card in Cards)
+				card.Update();
+			foreach(var card in CardDatabase)
+				card.Update();
 		}
 	}
 }

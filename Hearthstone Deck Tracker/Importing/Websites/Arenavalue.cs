@@ -76,11 +76,13 @@ namespace Hearthstone_Deck_Tracker.Importing.Websites
 						continue;
 
 					var card = Database.GetCardFromName(name);
+					if(card == null)
+						continue;
 					card.Count = count;
 					deck.Cards.Add(card);
 
-					if(string.IsNullOrEmpty(deck.Class) && card.GetPlayerClass != "Neutral")
-						deck.Class = card.PlayerClass;
+					if(string.IsNullOrEmpty(deck.Class) && card.IsClassCard)
+						deck.Class = HearthDbConverter.ConvertClass(card.PlayerClass);
 				}
 				deck.Name = Helper.ParseDeckNameTemplate(Config.Instance.ArenaDeckNameTemplate, deck);
 				return deck;

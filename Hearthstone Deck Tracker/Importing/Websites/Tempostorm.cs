@@ -40,6 +40,8 @@ namespace Hearthstone_Deck_Tracker.Importing.Websites
 						foreach(var item in cards)
 						{
 							var card = Database.GetCardFromName(item.card.name.ToString());
+							if(card == null)
+								continue;
 							card.Count = item.cardQuantity.ToString().Equals("2") ? 2 : 1;
 							deck.Cards.Add(card);
 							if(string.IsNullOrEmpty(deck.Class) && card.PlayerClass != "Neutral")

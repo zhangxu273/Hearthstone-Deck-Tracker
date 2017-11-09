@@ -47,8 +47,8 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls
 				var card = Database.GetCardFromId(c.Id);
 				card.Count = c.Count;
 				deck.Cards.Add(card);
-				if(string.IsNullOrEmpty(deck.Class) && !string.IsNullOrEmpty(card.PlayerClass))
-					deck.Class = card.PlayerClass;
+				if(string.IsNullOrEmpty(deck.Class) && card.IsClassCard)
+					deck.Class = HearthDbConverter.ConvertClass(card.PlayerClass);
 			}
 			SetDeck(deck, showImportButton);
 		}
